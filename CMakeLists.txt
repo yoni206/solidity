@@ -23,6 +23,7 @@ option(LLL "Build LLL" OFF)
 option(SOLC_LINK_STATIC "Link solc executable statically on supported platforms" OFF)
 option(LLLC_LINK_STATIC "Link lllc executable statically on supported platforms" OFF)
 option(INSTALL_LLLC "Include lllc executable in installation" ${LLL})
+option(SOLIDITY_LSP "Build Solidity LSP" OFF) # Default to OFF for now!
 
 # Setup cccache.
 include(EthCcache)
@@ -65,6 +66,10 @@ if (NOT EMSCRIPTEN)
 		add_subdirectory(liblll)
 		add_subdirectory(lllc)
 	endif()
+endif()
+
+if(SOLIDITY_LSP)
+	add_subdirectory(solsp)
 endif()
 
 if (TESTS AND NOT EMSCRIPTEN)
