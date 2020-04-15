@@ -46,8 +46,10 @@ namespace solidity::frontend
 class TypeProvider;
 class Type; // forward
 class FunctionType; // forward
+class ModifierType; // forward
 using TypePointer = Type const*;
 using FunctionTypePointer = FunctionType const*;
+using ModifierTypePointer = ModifierType const*;
 using TypePointers = std::vector<TypePointer>;
 using rational = boost::rational<bigint>;
 using TypeResult = util::Result<TypePointer>;
@@ -1396,11 +1398,19 @@ public:
 	std::string richIdentifier() const override;
 	bool operator==(Type const& _other) const override;
 	std::string toString(bool _short) const override;
+	bool hasEqualParameterTypes(ModifierType const& _other) const;
+	ModifierDefinition const* declaration() const
+	{
+		solAssert(m_declaration, "Requested declaration from a ModifierType that has none");
+		return m_declaration;
+	}
+	bool hasDeclaration() const { return !!m_declaration; }
 
 protected:
 	std::vector<std::tuple<std::string, TypePointer>> makeStackItems() const override { return {}; }
 private:
 	TypePointers m_parameterTypes;
+	ModifierDefinition const* m_declaration = nullptr;
 };
 
 

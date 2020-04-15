@@ -61,6 +61,7 @@ private:
 	void checkDuplicateEvents(ContractDefinition const& _contract);
 	template <class T>
 	void findDuplicateDefinitions(std::map<std::string, std::vector<T>> const& _definitions, std::string _message);
+	void checkAbstractModifiers(ContractDefinition const& _contract);
 	void checkAbstractFunctions(ContractDefinition const& _contract);
 	/// Checks that the base constructor arguments are properly provided.
 	/// Fills the list of unimplemented functions in _contract's annotations.

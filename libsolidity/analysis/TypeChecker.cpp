@@ -322,6 +322,16 @@ bool TypeChecker::visit(StructDefinition const& _struct)
 	return false;
 }
 
+bool TypeChecker::visit(ModifierDefinition const& _modifier)
+{
+	if (_modifier.isImplemented())
+		_modifier.body().accept(*this);
+	else if (!_modifier.virtualSemantics())
+		m_errorReporter.typeError(_modifier.location(), "Modifiers without implementation must be marked virtual.");
+
+	return false;
+}
+
 bool TypeChecker::visit(FunctionDefinition const& _function)
 {
 	bool isLibraryFunction = _function.inContractKind() == ContractKind::Library;

@@ -851,9 +851,17 @@ ASTPointer<ModifierDefinition> Parser::parseModifierDefinition()
 			break;
 	}
 
+	// See if empty block will affect somewhere else.
+	ASTPointer<Block> block;
+	nodeFactory.markEndPosition();
+	if (m_scanner->currentToken() != Token::Semicolon)
+	{
+		block = parseBlock();
+		nodeFactory.setEndPositionFromNode(block);
+	}
+	else
+		m_scanner->next(); // just consume the ';'
 
-	ASTPointer<Block> block = parseBlock();
-	nodeFactory.setEndPositionFromNode(block);
 	return nodeFactory.createNode<ModifierDefinition>(name, documentation, parameters, isVirtual, overrides, block);
 }
 

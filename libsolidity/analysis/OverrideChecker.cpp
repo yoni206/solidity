@@ -365,7 +365,7 @@ bool OverrideProxy::unimplemented() const
 {
 	return std::visit(GenericVisitor{
 		[&](FunctionDefinition const* _item) { return !_item->isImplemented(); },
-		[&](ModifierDefinition const*) { return false; },
+		[&](ModifierDefinition const* _item) { return !_item->isImplemented(); },
 		[&](VariableDeclaration const*) { return false; }
 	}, m_item);
 }

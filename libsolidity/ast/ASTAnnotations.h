@@ -130,6 +130,8 @@ struct TypeDeclarationAnnotation: DeclarationAnnotation
 
 struct ContractDefinitionAnnotation: TypeDeclarationAnnotation, StructurallyDocumentedAnnotation
 {
+	/// List of modifiers without a body.
+	std::vector<ModifierDefinition const*> unimplementedModifiers;
 	/// List of functions without a body. Can also contain functions from base classes.
 	std::vector<FunctionDefinition const*> unimplementedFunctions;
 	/// List of all (direct and indirect) base contracts in order from derived to

@@ -55,6 +55,7 @@ bool ContractLevelChecker::check(ContractDefinition const& _contract)
 	checkDuplicateEvents(_contract);
 	m_overrideChecker.check(_contract);
 	checkBaseConstructorArguments(_contract);
+	checkAbstractModifiers(_contract);
 	checkAbstractFunctions(_contract);
 	checkExternalTypeClashes(_contract);
 	checkHashCollisions(_contract);
@@ -153,6 +154,57 @@ void ContractLevelChecker::findDuplicateDefinitions(map<string, vector<T>> const
 				);
 			}
 		}
+	}
+}
+
+void ContractLevelChecker::checkAbstractModifiers(ContractDefinition const& _contract)
+{
+	// Mapping from name to modifier definition (exactly one per argument type equality class) and
+	// flag to indicate whether it is fully implemented.
+	using ModiTypeAndFlag = pair<ModifierTypePointer, bool>;
+	map<string, vector<ModiTypeAndFlag>> modifiers;
+
+	auto registerModifier = [&](ModifierDefinition const& _modi, ModifierTypePointer const& _type) {
+		auto& overloads = modifiers[_modi.name()];
+		auto it = find_if(overloads.begin(), overloads.end(), [&](ModiTypeAndFlag const& _modiAndFlag) {
+			return _type->hasEqualParameterTypes(*_modiAndFlag.first);
+		});
+		if (it == overloads.end())
+			overloads.emplace_back(_type, _modi.isImplemented());
+		else if (_modi.isImplemented())
+			it->second = true;
+	};
+
+
+	// Search from base to derived, collect all functions and update
+	// the 'implemented' flag.
+	for (ContractDefinition const* contract: boost::adaptors::reverse(_contract.annotation().linearizedBaseContracts))
+		for (ModifierDefinition const* modifier: contract->functionModifiers())
+			registerModifier(*modifier, TypeProvider::modifier(*modifier));
+
+	// Set to not fully implemented if at least one flag is false.
+	for (auto const& it: modifiers)
+		for (auto const& modiAndFlag: it.second)
+			if (!modiAndFlag.second)
+			{
+				ModifierDefinition const* modifier = modiAndFlag.first->declaration();
+				solAssert(modifier, "");
+				_contract.annotation().unimplementedModifiers.push_back(modifier);
+				break;
+			}
+
+	if (
+		_contract.contractKind() == ContractKind::Contract &&
+		!_contract.abstract() &&
+		!_contract.annotation().unimplementedModifiers.empty()
+	)
+	{
+		SecondarySourceLocation ssl;
+		for (auto modifier: _contract.annotation().unimplementedModifiers)
+			ssl.append("Missing implementation:", modifier->location());
+		m_errorReporter.typeError(_contract.location(), ssl,
+			"Contract \"" + _contract.annotation().canonicalName
+			+ "\" should be marked as abstract.");
 	}
 }
 

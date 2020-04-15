@@ -3532,7 +3532,8 @@ BoolResult TypeType::isExplicitlyConvertibleTo(Type const& _convertTo) const
 	return isImplicitlyConvertibleTo(_convertTo);
 }
 
-ModifierType::ModifierType(ModifierDefinition const& _modifier)
+ModifierType::ModifierType(ModifierDefinition const& _modifier):
+	m_declaration(&_modifier)
 {
 	TypePointers params;
 	params.reserve(_modifier.parameters().size());
@@ -3577,6 +3578,17 @@ string ModifierType::toString(bool _short) const
 	for (auto it = m_parameterTypes.begin(); it != m_parameterTypes.end(); ++it)
 		name += (*it)->toString(_short) + (it + 1 == m_parameterTypes.end() ? "" : ",");
 	return name + ")";
+}
+
+bool ModifierType::hasEqualParameterTypes(ModifierType const& _other) const
+{
+	if (m_parameterTypes.size() != _other.m_parameterTypes.size())
+		return false;
+	return equal(
+		m_parameterTypes.cbegin(),
+		m_parameterTypes.cend(),
+		_other.m_parameterTypes.cbegin(),
+		[](Type const* _a, Type const* _b) -> bool { return *_a == *_b; });
 }
 
 string ModuleType::richIdentifier() const
