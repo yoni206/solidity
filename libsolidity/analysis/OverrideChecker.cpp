@@ -206,6 +206,30 @@ bool OverrideProxy::isModifier() const
 	return holds_alternative<ModifierDefinition const*>(m_item);
 }
 
+bool OverrideProxy::isSameSignature(OverrideProxy const& other) const
+{
+	auto _this = this->overrideComparator();
+	auto _other = other.overrideComparator();
+
+	if (_this.name != _other.name)
+		return false;
+
+	// Dealing with modifiers
+	if (!_this.functionKind && !_other.functionKind)
+	{
+		return this->modifierType()->hasEqualParameterTypes(*other.modifierType());
+	}
+
+	if (_this.functionKind != _other.functionKind)
+		return false;
+
+	if (!_this.parameterTypes || !_other.parameterTypes)
+		return false;
+
+	return (*(_this.parameterTypes) == *(_other.parameterTypes));
+
+}
+
 bool OverrideProxy::CompareBySignature::operator()(OverrideProxy const& _a, OverrideProxy const& _b) const
 {
 	return _a.overrideComparator() < _b.overrideComparator();
@@ -325,6 +349,51 @@ ModifierType const* OverrideProxy::modifierType() const
 		[&](VariableDeclaration const*) -> ModifierType const* { solAssert(false, "Requested modifier type of variable."); return nullptr; },
 		[&](ModifierDefinition const* _modifier) -> ModifierType const* { return TypeProvider::modifier(*_modifier); }
 	}, m_item);
+}
+
+FunctionDefinition const* OverrideProxy::functionDefinition() const
+{
+	return std::visit(
+		GenericVisitor{[&](FunctionDefinition const* _function) { return _function; },
+					   [&](VariableDeclaration const*) -> FunctionDefinition const* {
+						   solAssert(false, "Requested function definition of a variable.");
+						   return nullptr;
+					   },
+					   [&](ModifierDefinition const*) -> FunctionDefinition const* {
+						   solAssert(false, "Requested function definition of a modifier.");
+						   return nullptr;
+					   }},
+		m_item);
+}
+
+VariableDeclaration const* OverrideProxy::variableDeclaration() const
+{
+	return std::visit(
+		GenericVisitor{[&](FunctionDefinition const*) -> VariableDeclaration const* {
+						   solAssert(false, "Requested variable definition of a function.");
+						   return nullptr;
+					   },
+					   [&](VariableDeclaration const* _variable) { return _variable; },
+					   [&](ModifierDefinition const*) -> VariableDeclaration const* {
+						   solAssert(false, "Requested variable definition of modifier.");
+						   return nullptr;
+					   }},
+		m_item);
+}
+
+ModifierDefinition const* OverrideProxy::modifierDefinition() const
+{
+	return std::visit(
+		GenericVisitor{[&](FunctionDefinition const*) -> ModifierDefinition const* {
+						   solAssert(false, "Requested modifier definition of function.");
+						   return nullptr;
+					   },
+					   [&](VariableDeclaration const*) -> ModifierDefinition const* {
+						   solAssert(false, "Requested modifier definition of variable.");
+						   return nullptr;
+					   },
+					   [&](ModifierDefinition const* _modifier) { return _modifier; }},
+		m_item);
 }
 
 SourceLocation const& OverrideProxy::location() const
