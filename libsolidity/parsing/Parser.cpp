@@ -851,7 +851,6 @@ ASTPointer<ModifierDefinition> Parser::parseModifierDefinition()
 			break;
 	}
 
-	// See if empty block will affect somewhere else.
 	ASTPointer<Block> block;
 	nodeFactory.markEndPosition();
 	if (m_scanner->currentToken() != Token::Semicolon)

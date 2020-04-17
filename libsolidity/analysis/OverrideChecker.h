@@ -88,9 +88,7 @@ public:
 	FunctionType const* functionType() const;
 	ModifierType const* modifierType() const;
 
-	FunctionDefinition const* functionDefinition() const;
-	ModifierDefinition const* modifierDefinition() const;
-	VariableDeclaration const* variableDeclaration() const;
+	Declaration const* getDeclaration() const;
 
 	langutil::SourceLocation const& location() const;
 

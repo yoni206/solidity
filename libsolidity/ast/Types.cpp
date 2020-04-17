@@ -3532,8 +3532,7 @@ BoolResult TypeType::isExplicitlyConvertibleTo(Type const& _convertTo) const
 	return isImplicitlyConvertibleTo(_convertTo);
 }
 
-ModifierType::ModifierType(ModifierDefinition const& _modifier):
-	m_declaration(&_modifier)
+ModifierType::ModifierType(ModifierDefinition const& _modifier)
 {
 	TypePointers params;
 	params.reserve(_modifier.parameters().size());

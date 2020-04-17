@@ -194,16 +194,13 @@ void ContractLevelChecker::checkAbstractDefinitions(ContractDefinition const& _c
 	}
 
 	// Set to not fully implemented if at least one flag is false.
-	// Note that `_contract.annotation().unimplementedFunctions` has already been
+	// Note that `_contract.annotation().unimplementedDeclarations` has already been
 	// pre-filled by `checkBaseConstructorArguments`.
 	for (auto const& it: proxies)
 		for (auto const& proxyAndFlag: it.second)
 			if (!proxyAndFlag.second)
- 			{
-				if (proxyAndFlag.first.isFunction())
-					_contract.annotation().unimplementedFunctions.push_back(proxyAndFlag.first.functionDefinition());
-				else if (proxyAndFlag.first.isModifier())
-					_contract.annotation().unimplementedModifiers.push_back(proxyAndFlag.first.modifierDefinition());
+			{
+				_contract.annotation().unimplementedDeclarations.push_back(proxyAndFlag.first.getDeclaration());
 				break;
 			}
 
@@ -222,19 +219,16 @@ void ContractLevelChecker::checkAbstractDefinitions(ContractDefinition const& _c
 	if (
 		_contract.contractKind() == ContractKind::Contract &&
 		!_contract.abstract() &&
-		(!_contract.annotation().unimplementedFunctions.empty() ||
-			!_contract.annotation().unimplementedModifiers.empty()
-		)
+		!_contract.annotation().unimplementedDeclarations.empty()
 	)
 	{
 		SecondarySourceLocation ssl;
-		for (auto function: _contract.annotation().unimplementedFunctions)
-			ssl.append("Missing implementation:", function->location());
-		for (auto modifier: _contract.annotation().unimplementedModifiers)
-			ssl.append("Missing implementation:", modifier->location());
+		for (auto declaration: _contract.annotation().unimplementedDeclarations)
+			ssl.append("Missing implementation: ", declaration->location());
 		m_errorReporter.typeError(_contract.location(), ssl,
 			"Contract \"" + _contract.annotation().canonicalName
 			+ "\" should be marked as abstract.");
+
 	}
 }
 
@@ -282,7 +276,7 @@ void ContractLevelChecker::checkBaseConstructorArguments(ContractDefinition cons
 		if (FunctionDefinition const* constructor = contract->constructor())
 			if (contract != &_contract && !constructor->parameters().empty())
 				if (!_contract.annotation().baseConstructorArguments.count(constructor))
-					_contract.annotation().unimplementedFunctions.push_back(constructor);
+					_contract.annotation().unimplementedDeclarations.push_back(constructor);
 }
 
 void ContractLevelChecker::annotateBaseConstructorArguments(

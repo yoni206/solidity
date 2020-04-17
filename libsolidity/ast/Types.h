@@ -1400,18 +1400,10 @@ public:
 	std::string toString(bool _short) const override;
 	TypePointers parameterTypes() const;
 	bool hasEqualParameterTypes(ModifierType const& _other) const;
-	ModifierDefinition const* declaration() const
-	{
-		solAssert(m_declaration, "Requested declaration from a ModifierType that has none");
-		return m_declaration;
-	}
-	bool hasDeclaration() const { return !!m_declaration; }
-
 protected:
 	std::vector<std::tuple<std::string, TypePointer>> makeStackItems() const override { return {}; }
 private:
 	TypePointers m_parameterTypes;
-	ModifierDefinition const* m_declaration = nullptr;
 };
 
 

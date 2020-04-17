@@ -272,8 +272,7 @@ bool ASTJsonConverter::visit(ContractDefinition const& _node)
 		make_pair("documentation", _node.documentation() ? toJson(*_node.documentation()) : Json::nullValue),
 		make_pair("contractKind", contractKind(_node.contractKind())),
 		make_pair("abstract", _node.abstract()),
-		make_pair("fullyImplemented", _node.annotation().unimplementedFunctions.empty() &&
-					 _node.annotation().unimplementedModifiers.empty()),
+		make_pair("fullyImplemented", _node.annotation().unimplementedDeclarations.empty()),
 		make_pair("linearizedBaseContracts", getContainerIds(_node.annotation().linearizedBaseContracts)),
 		make_pair("baseContracts", toJson(_node.baseContracts())),
 		make_pair("contractDependencies", getContainerIds(_node.annotation().contractDependencies, true)),

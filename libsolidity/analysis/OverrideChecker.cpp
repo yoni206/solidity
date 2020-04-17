@@ -223,10 +223,7 @@ bool OverrideProxy::isSameSignature(OverrideProxy const& other) const
 	if (_this.functionKind != _other.functionKind)
 		return false;
 
-	if (!_this.parameterTypes || !_other.parameterTypes)
-		return false;
-
-	return (*(_this.parameterTypes) == *(_other.parameterTypes));
+	return (_this.parameterTypes == _other.parameterTypes);
 
 }
 
@@ -351,49 +348,14 @@ ModifierType const* OverrideProxy::modifierType() const
 	}, m_item);
 }
 
-FunctionDefinition const* OverrideProxy::functionDefinition() const
-{
-	return std::visit(
-		GenericVisitor{[&](FunctionDefinition const* _function) { return _function; },
-					   [&](VariableDeclaration const*) -> FunctionDefinition const* {
-						   solAssert(false, "Requested function definition of a variable.");
-						   return nullptr;
-					   },
-					   [&](ModifierDefinition const*) -> FunctionDefinition const* {
-						   solAssert(false, "Requested function definition of a modifier.");
-						   return nullptr;
-					   }},
-		m_item);
-}
 
-VariableDeclaration const* OverrideProxy::variableDeclaration() const
+Declaration const* OverrideProxy::getDeclaration() const
 {
-	return std::visit(
-		GenericVisitor{[&](FunctionDefinition const*) -> VariableDeclaration const* {
-						   solAssert(false, "Requested variable definition of a function.");
-						   return nullptr;
-					   },
-					   [&](VariableDeclaration const* _variable) { return _variable; },
-					   [&](ModifierDefinition const*) -> VariableDeclaration const* {
-						   solAssert(false, "Requested variable definition of modifier.");
-						   return nullptr;
-					   }},
-		m_item);
-}
-
-ModifierDefinition const* OverrideProxy::modifierDefinition() const
-{
-	return std::visit(
-		GenericVisitor{[&](FunctionDefinition const*) -> ModifierDefinition const* {
-						   solAssert(false, "Requested modifier definition of function.");
-						   return nullptr;
-					   },
-					   [&](VariableDeclaration const*) -> ModifierDefinition const* {
-						   solAssert(false, "Requested modifier definition of variable.");
-						   return nullptr;
-					   },
-					   [&](ModifierDefinition const* _modifier) { return _modifier; }},
-		m_item);
+	return std::visit(GenericVisitor{
+		[&](FunctionDefinition const* _function) -> Declaration const* { return _function; },
+		[&](VariableDeclaration const* _variable) -> Declaration const* { return _variable; },
+		[&](ModifierDefinition const* _modifier) -> Declaration const* { return _modifier; }
+	}, m_item);
 }
 
 SourceLocation const& OverrideProxy::location() const
